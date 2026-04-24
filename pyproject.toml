@@ -5,11 +5,19 @@ description = "RAG over Brandon Sanderson's Cosmere"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "pydantic>=2.13.3",
     "tiktoken>=0.7",
+    "langchain-core>=0.3",
+    "langchain-openai>=0.2",
+    "pyarrow>=17",
+    "numpy>=2",
+    "chromadb>=0.5",
 ]
 
 [project.scripts]
 cosmere-ingest-coppermind = "cosmere_rag.ingest.cli:main"
+cosmere-embed = "cosmere_rag.embed.cli:main"
+cosmere-index = "cosmere_rag.index.cli:main"
 
 [build-system]
 requires = ["hatchling"]

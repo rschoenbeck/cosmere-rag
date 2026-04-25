@@ -12,6 +12,7 @@ dependencies = [
     "pyarrow>=17",
     "numpy>=2",
     "chromadb>=0.5",
+    "google-cloud-bigquery>=3.25",
 ]
 
 [project.scripts]

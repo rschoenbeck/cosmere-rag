@@ -13,6 +13,7 @@ dependencies = [
     "numpy>=2",
     "chromadb>=0.5",
     "deepeval>=2.0",
+    "google-cloud-bigquery>=3.25"
 ]
 
 [project.scripts]

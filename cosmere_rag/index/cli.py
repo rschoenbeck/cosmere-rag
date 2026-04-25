@@ -2,8 +2,8 @@
 
 Joins the JSONL chunks corpus with the embeddings parquet produced by
 `cosmere-embed`, and upserts the resulting (chunk, vector) pairs into the
-selected backend. Only `chroma` is wired up today; the flag exists so the
-BigQuery backend can slot in without changing callers.
+selected backend (`chroma` for local iteration, `bigquery` for the
+deployed target).
 
 Integrity checks before writing:
   - the parquet must not mix embedding models (a single collection is
@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from collections.abc import Iterable
 from pathlib import Path
@@ -23,9 +24,11 @@ from typing import Any
 
 import pyarrow.parquet as pq
 
+from cosmere_rag.core.chunk import Chunk
+from cosmere_rag.core.retriever import Retriever
 from cosmere_rag.embed.ids import compute_chunk_id
 from cosmere_rag.embed.store import SCHEMA as EMBEDDINGS_SCHEMA
-from cosmere_rag.core.chunk import Chunk
+from cosmere_rag.retrieval.bigquery_store import BigQueryStore
 from cosmere_rag.retrieval.chroma_store import ChromaStore
 
 
@@ -59,18 +62,42 @@ def _sole_model(embeddings: Iterable[dict[str, Any]]) -> str:
     return next(iter(models))
 
 
-def run(
-    chunks_path: Path,
-    embeddings_path: Path,
-    chroma_path: Path,
-    collection_name: str,
-) -> int:
-    chunk_rows = _load_chunks(chunks_path)
+def _bq_safe(name: str) -> str:
+    """BigQuery table names allow letters/digits/underscore only."""
+    return name.replace("-", "_")
+
+
+def _build_store(args: argparse.Namespace, collection: str) -> tuple[Retriever, str]:
+    """Return (store, human-readable target description)."""
+    if args.backend == "chroma":
+        store = ChromaStore(path=args.chroma_path, collection_name=collection)
+        return store, f"{collection!r} at {args.chroma_path}"
+
+    if args.backend == "bigquery":
+        project = args.bq_project or os.environ.get("GOOGLE_CLOUD_PROJECT")
+        if not project:
+            raise SystemExit(
+                "bigquery backend requires --bq-project or GOOGLE_CLOUD_PROJECT"
+            )
+        table_name = _bq_safe(collection)
+        store = BigQueryStore(
+            project=project,
+            dataset=args.bq_dataset,
+            table_name=table_name,
+            location=args.bq_location,
+        )
+        return store, f"`{project}.{args.bq_dataset}.{table_name}`"
+
+    raise AssertionError(f"unreachable backend {args.backend!r}")
+
+
+def run(args: argparse.Namespace) -> int:
+    chunk_rows = _load_chunks(args.chunks)
     if not chunk_rows:
-        print(f"no chunks in {chunks_path}; nothing to index", file=sys.stderr)
+        print(f"no chunks in {args.chunks}; nothing to index", file=sys.stderr)
         return 0
 
-    embeddings = _load_embeddings(embeddings_path)
+    embeddings = _load_embeddings(args.embeddings)
     model = _sole_model(embeddings.values())
 
     missing = [r["chunk_id"] for r in chunk_rows if r["chunk_id"] not in embeddings]
@@ -83,11 +110,12 @@ def run(
     chunks = [Chunk.model_validate(r) for r in chunk_rows]
     vectors = [embeddings[c.chunk_id]["embedding"] for c in chunks]
 
-    store = ChromaStore(path=chroma_path, collection_name=collection_name)
+    collection = args.collection or args.embeddings.stem
+    store, target = _build_store(args, collection)
     store.add(chunks, vectors)
     print(
         f"indexed {len(chunks)} chunks ({model}) into "
-        f"{collection_name!r} at {chroma_path} [total={store.count()}]",
+        f"{target} [total={store.count()}]",
         file=sys.stderr,
     )
     return 0
@@ -95,19 +123,25 @@ def run(
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="cosmere-index")
-    p.add_argument("--backend", choices=["chroma"], default="chroma")
+    p.add_argument("--backend", choices=["chroma", "bigquery"], default="chroma")
     p.add_argument("--chunks", type=Path, required=True)
     p.add_argument("--embeddings", type=Path, required=True)
-    p.add_argument("--chroma-path", type=Path, default=Path("data/chroma"))
     p.add_argument(
         "--collection",
         default=None,
-        help="Collection name (default: the embeddings parquet file stem).",
+        help="Collection/table name (default: the embeddings parquet file stem). "
+        "For BigQuery, hyphens are converted to underscores.",
     )
+    p.add_argument("--chroma-path", type=Path, default=Path("data/chroma"))
+    p.add_argument(
+        "--bq-project",
+        default=None,
+        help="GCP project id (or set GOOGLE_CLOUD_PROJECT).",
+    )
+    p.add_argument("--bq-dataset", default="cosmere_rag")
+    p.add_argument("--bq-location", default="US")
     args = p.parse_args(argv)
-
-    collection = args.collection or args.embeddings.stem
-    return run(args.chunks, args.embeddings, args.chroma_path, collection)
+    return run(args)
 
 
 if __name__ == "__main__":

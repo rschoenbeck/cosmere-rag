@@ -1,8 +1,9 @@
 """Run a Retriever over a golden set and capture per-query results.
 
-Sits between the golden set and the metric modules: every metric (IR or
-LLM-judge) reads from `RetrievalResult` rather than calling the
-retriever itself, so a single retrieval pass feeds both tracks.
+Used by the offline path (`cosmere-eval run --offline`) and by the
+metric unit tests, which still consume `RetrievalResult`. The online
+LangSmith path (`cosmere_rag/eval/experiment.py`) calls
+`run_retrieval_chain` per example instead and does not go through here.
 """
 from __future__ import annotations
 
@@ -30,12 +31,16 @@ class RetrievalResult(BaseModel):
     retrieved: list[RetrievedChunk] = Field(default_factory=list)
 
 
-def _build_where(query: EvalQuery) -> Mapping[str, Any] | None:
+def build_where(
+    *,
+    spoiler_scope: str | None = None,
+    series_filter: Sequence[str] | None = None,
+) -> dict[str, Any] | None:
     where: dict[str, Any] = {}
-    if query.spoiler_scope:
-        where["spoiler_scope"] = query.spoiler_scope
-    if query.series_filter:
-        values = list(query.series_filter)
+    if spoiler_scope:
+        where["spoiler_scope"] = spoiler_scope
+    if series_filter:
+        values = list(series_filter)
         where["series_mentioned"] = values[0] if len(values) == 1 else {"$in": values}
     return where or None
 
@@ -49,7 +54,11 @@ def run_retrieval(
     results: list[RetrievalResult] = []
     for q in queries:
         vec = embedder.embed_query(q.query)
-        retrieved = retriever.query(vec, k=k, where=_build_where(q))
+        where: Mapping[str, Any] | None = build_where(
+            spoiler_scope=q.spoiler_scope,
+            series_filter=q.series_filter,
+        )
+        retrieved = retriever.query(vec, k=k, where=where)
         results.append(
             RetrievalResult(
                 query_id=q.query_id,

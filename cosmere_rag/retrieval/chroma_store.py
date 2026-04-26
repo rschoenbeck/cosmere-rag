@@ -32,6 +32,8 @@ from typing import Any
 import chromadb
 from chromadb.config import Settings
 
+from langsmith import traceable
+
 from cosmere_rag.core.chunk import Chunk
 from cosmere_rag.core.retrieved_chunk import RetrievedChunk
 
@@ -132,6 +134,7 @@ class ChromaStore:
             embeddings=list(embeddings),
         )
 
+    @traceable(run_type="retriever", name="ChromaStore.query")
     def query(
         self,
         embedding: list[float],

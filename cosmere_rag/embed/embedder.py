@@ -19,6 +19,7 @@ from dataclasses import dataclass
 import numpy as np
 from langchain_core.embeddings import Embeddings
 from langchain_openai import OpenAIEmbeddings
+from langsmith import traceable
 
 
 @dataclass(frozen=True)
@@ -40,6 +41,7 @@ class Embedder:
         self.model = model
         self.provider: Embeddings = provider or OpenAIEmbeddings(model=model)
 
+    @traceable(run_type="embedding", name="Embedder.embed_documents")
     def embed_documents(self, texts: Sequence[str]) -> EmbeddingResult:
         vecs: list[list[float]] = []
         for start in range(0, len(texts), self.MAX_INPUTS_PER_REQUEST):
@@ -48,6 +50,7 @@ class Embedder:
                 vecs.append(_l2_normalize(raw))
         return EmbeddingResult(embeddings=vecs, model=self.model, model_version=self.model)
 
+    @traceable(run_type="embedding", name="Embedder.embed_query")
     def embed_query(self, text: str) -> list[float]:
         return _l2_normalize(self.provider.embed_query(text))
 

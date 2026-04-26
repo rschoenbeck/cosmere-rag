@@ -33,6 +33,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from google.cloud import bigquery
+from langsmith import traceable
 
 from cosmere_rag.core.chunk import Chunk
 from cosmere_rag.core.retrieved_chunk import RetrievedChunk
@@ -263,6 +264,7 @@ class BigQueryStore:
 
         self._ensure_vector_index()
 
+    @traceable(run_type="retriever", name="BigQueryStore.query")
     def query(
         self,
         embedding: list[float],

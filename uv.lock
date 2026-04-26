@@ -407,9 +407,11 @@ dependencies = [
     { name = "google-cloud-bigquery" },
     { name = "langchain-core" },
     { name = "langchain-openai" },
+    { name = "langsmith" },
     { name = "numpy" },
     { name = "pyarrow" },
     { name = "pydantic" },
+    { name = "python-dotenv" },
     { name = "tiktoken" },
 ]
 
@@ -425,9 +427,11 @@ requires-dist = [
     { name = "google-cloud-bigquery", specifier = ">=3.25" },
     { name = "langchain-core", specifier = ">=0.3" },
     { name = "langchain-openai", specifier = ">=0.2" },
+    { name = "langsmith", specifier = ">=0.7.33" },
     { name = "numpy", specifier = ">=2" },
     { name = "pyarrow", specifier = ">=17" },
     { name = "pydantic", specifier = ">=2.13.3" },
+    { name = "python-dotenv", specifier = ">=1" },
     { name = "tiktoken", specifier = ">=0.7" },
 ]
 

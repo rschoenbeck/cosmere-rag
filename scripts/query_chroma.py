@@ -14,7 +14,12 @@ import argparse
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from cosmere_rag.embed.embedder import Embedder
+from cosmere_rag.retrieval.chain import run_retrieval_chain
 from cosmere_rag.retrieval.chroma_store import ChromaStore
 
 DEFAULT_CHROMA_PATH = Path("data/chroma")
@@ -54,8 +59,15 @@ def main(argv: list[str] | None = None) -> int:
         values = [v.strip() for v in args.series.split(",") if v.strip()]
         where["series_mentioned"] = values[0] if len(values) == 1 else {"$in": values}
 
-    query_vec = Embedder(model=args.model).embed_query(args.query)
-    results = store.query(query_vec, k=args.k, where=where or None)
+    chain_out = run_retrieval_chain(
+        args.query,
+        retriever=store,
+        embedder=Embedder(model=args.model),
+        k=args.k,
+        where=where or None,
+        collection=args.collection,
+    )
+    results = chain_out["results"]
 
     print(
         f"query: {args.query!r}  [k={args.k}, total={total}, where={where or None}]\n",

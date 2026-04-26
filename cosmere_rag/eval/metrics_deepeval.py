@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from cosmere_rag.eval.config import DEFAULT_JUDGE_MODEL
 from cosmere_rag.eval.runner import RetrievalResult
 
 DEFAULT_DEEPEVAL_METRICS = ("contextual_relevancy", "contextual_precision", "contextual_recall")
@@ -24,7 +25,7 @@ DEFAULT_DEEPEVAL_METRICS = ("contextual_relevancy", "contextual_precision", "con
 def aggregate_deepeval_metrics(
     results: Sequence[RetrievalResult],
     metrics: Sequence[str] = DEFAULT_DEEPEVAL_METRICS,
-    judge_model: str = "gpt-5.4-mini",
+    judge_model: str = DEFAULT_JUDGE_MODEL,
     threshold: float = 0.5,
 ) -> dict[str, float]:
     if not results:

@@ -26,6 +26,7 @@ from pathlib import Path
 
 from openai import OpenAI
 
+from cosmere_rag.eval.config import DEFAULT_JUDGE_MODEL
 from cosmere_rag.eval.dataset import EvalQuery, save_golden_set
 from cosmere_rag.retrieval.chroma_store import ChromaStore
 
@@ -47,7 +48,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--chroma-path", type=Path, default=Path("data/chroma"))
     p.add_argument("--num", type=int, default=30)
     p.add_argument("--out", type=Path, required=True)
-    p.add_argument("--llm-model", default="gpt-4o-mini")
+    p.add_argument("--llm-model", default=DEFAULT_JUDGE_MODEL)
     p.add_argument("--seed", type=int, default=0)
     args = p.parse_args(argv)
 

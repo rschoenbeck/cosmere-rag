@@ -7,7 +7,7 @@ Subcommands:
         --collection cosmere-3small-era1 \\
         --embedding-model text-embedding-3-small \\
         --k 8 \\
-        --metrics ir,deepeval \\
+        --metrics ir,llm \\
         [--dataset-name mistborn_era1] \\
         [--experiment-prefix era1-3small-k8]
 
@@ -25,8 +25,8 @@ The same embedding model must be used at query time as at index time.
 The default `run` mode uploads results to LangSmith (the JSONL stem is
 used as the dataset name unless `--dataset-name` is given). `--offline`
 skips LangSmith entirely and prints the IR aggregate to stdout — useful
-for hermetic checks and quick local sanity runs. DeepEval metrics use
-OpenAI by default and incur LLM cost; pass `--metrics ir` for a free
+for hermetic checks and quick local sanity runs. The `llm` track uses
+OpenAI by default and incurs LLM cost; pass `--metrics ir` for a free
 run.
 """
 from __future__ import annotations
@@ -50,7 +50,7 @@ from cosmere_rag.retrieval.chroma_store import ChromaStore
 
 def _parse_metrics(value: str) -> list[str]:
     parts = [p.strip().lower() for p in value.split(",") if p.strip()]
-    allowed = {"ir", "deepeval"}
+    allowed = {"ir", "llm"}
     bad = [p for p in parts if p not in allowed]
     if bad:
         raise argparse.ArgumentTypeError(
@@ -98,7 +98,7 @@ def _add_run_args(p: argparse.ArgumentParser) -> None:
         "--metrics",
         type=_parse_metrics,
         default=["ir"],
-        help="Comma-separated tracks: ir,deepeval (default: ir).",
+        help="Comma-separated tracks: ir,llm (default: ir).",
     )
     p.add_argument("--judge-model", default=DEFAULT_JUDGE_MODEL)
     p.add_argument(
@@ -196,9 +196,9 @@ def _run_offline(
     if not queries:
         print(f"golden set {args.golden_set} is empty", file=sys.stderr)
         return 1
-    if "deepeval" in args.metrics:
+    if "llm" in args.metrics:
         print(
-            "warning: --offline ignores the deepeval track; only IR metrics "
+            "warning: --offline ignores the llm track; only IR metrics "
             "are reported",
             file=sys.stderr,
         )

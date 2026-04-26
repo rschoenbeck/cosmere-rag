@@ -12,7 +12,6 @@ dependencies = [
     "pyarrow>=17",
     "numpy>=2",
     "chromadb>=0.5",
-    "deepeval>=2.0",
     "google-cloud-bigquery>=3.25",
     "langsmith>=0.7.33",
     "python-dotenv>=1",

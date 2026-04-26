@@ -1,7 +1,7 @@
 """LangSmith experiment runner.
 
 Wraps `langsmith.evaluate()` so a single call runs the retrieval chain
-over a dataset, scores it with the IR evaluators (and DeepEval's three
+over a dataset, scores it with the IR evaluators (and three LLM-judge
 contextual metrics when requested), and records everything as one
 experiment in the LangSmith UI. Per-query drill-down replaces the
 JSON/markdown reports the old `runner.py` + `report.py` pair produced.
@@ -23,8 +23,8 @@ from langsmith.evaluation._runner import ExperimentResults
 from cosmere_rag.core.retriever import Retriever
 from cosmere_rag.embed.embedder import Embedder
 from cosmere_rag.eval.config import DEFAULT_JUDGE_MODEL
-from cosmere_rag.eval.evaluators_deepeval import deepeval_contextual_evaluator
 from cosmere_rag.eval.evaluators_ir import all_ir_evaluators
+from cosmere_rag.eval.evaluators_llm import llm_contextual_evaluator
 from cosmere_rag.eval.runner import build_where
 from cosmere_rag.retrieval.chain import run_retrieval_chain
 
@@ -75,20 +75,20 @@ def run_experiment(
     """Run a LangSmith experiment over `dataset_name`.
 
     `metrics` selects which evaluator tracks to attach: `"ir"` (always
-    cheap, no LLM calls) and/or `"deepeval"` (three contextual judge
-    metrics, ~3 LLM calls per example). The IR track scores examples
-    that have `relevant_chunk_ids`; DeepEval scores examples that have
+    cheap, no LLM calls) and/or `"llm"` (three contextual judge metrics,
+    ~3 LLM calls per example). The IR track scores examples that have
+    `relevant_chunk_ids`; the LLM track scores examples that have
     `expected_answer` and at least one retrieved chunk.
     """
-    unknown = set(metrics) - {"ir", "deepeval"}
+    unknown = set(metrics) - {"ir", "llm"}
     if unknown:
         raise ValueError(f"unknown metric track(s): {sorted(unknown)}")
 
     evaluators: list[Callable[..., Any]] = []
     if "ir" in metrics:
         evaluators.extend(all_ir_evaluators(k))
-    if "deepeval" in metrics:
-        evaluators.append(deepeval_contextual_evaluator(judge_model=judge_model))
+    if "llm" in metrics:
+        evaluators.append(llm_contextual_evaluator(judge_model=judge_model))
 
     target = build_target(
         retriever=retriever,

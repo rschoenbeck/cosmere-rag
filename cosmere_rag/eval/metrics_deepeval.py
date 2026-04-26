@@ -24,7 +24,7 @@ DEFAULT_DEEPEVAL_METRICS = ("contextual_relevancy", "contextual_precision", "con
 def aggregate_deepeval_metrics(
     results: Sequence[RetrievalResult],
     metrics: Sequence[str] = DEFAULT_DEEPEVAL_METRICS,
-    judge_model: str = "gpt-4o-mini",
+    judge_model: str = "gpt-5.4-mini",
     threshold: float = 0.5,
 ) -> dict[str, float]:
     if not results:

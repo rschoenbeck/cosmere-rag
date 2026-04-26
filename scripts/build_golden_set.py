@@ -32,7 +32,8 @@ from cosmere_rag.retrieval.chroma_store import ChromaStore
 DRAFT_PROMPT = """You are drafting a question-and-answer pair for a retrieval evaluation set.
 
 Below is one chunk of source text from the Coppermind wiki article {article!r}.
-Write a single specific question that this chunk uniquely answers, and the ideal short answer (1-3 sentences). The question should sound like something a Cosmere reader might genuinely ask. Avoid yes/no questions.
+Write a single specific question that this chunk uniquely answers, and the ideal short answer (1-3 sentences). 
+The question should sound like something a Cosmere reader might genuinely ask. Avoid yes/no questions.
 
 Source text:
 \"\"\"{text}\"\"\"

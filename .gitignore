@@ -225,3 +225,7 @@ plans/
 
 # Vendored corpora and ingestion outputs
 data/
+
+# Reports and eval temp storage
+reports/
+.deepeval/

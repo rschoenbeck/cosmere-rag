@@ -229,3 +229,10 @@ data/
 # Reports and eval temp storage
 reports/
 .deepeval/
+
+# Terraform
+infra/terraform/*.tfstate*
+infra/terraform/.terraform/
+infra/terraform/.terraform.lock.hcl
+infra/terraform/*.tfvars
+!infra/terraform/*.tfvars.example

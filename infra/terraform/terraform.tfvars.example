@@ -1,0 +1,12 @@
+# Copy to terraform.tfvars and fill in. The real .tfvars is gitignored.
+
+project_id = "your-gcp-project-id"
+
+# Optional overrides (all have sensible defaults):
+# region            = "us-central1"
+# dataset_name      = "cosmere_rag"
+# dataset_location  = "US"
+# table_name        = "era1"
+# image_repo        = "cosmere-rag"
+# embedding_model   = "text-embedding-3-small"
+# langsmith_project = "cosmere-rag"

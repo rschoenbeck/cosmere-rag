@@ -15,6 +15,8 @@ dependencies = [
     "google-cloud-bigquery>=3.25",
     "langsmith>=0.7.33",
     "python-dotenv>=1",
+    "langchain>=1",
+    "langgraph>=0.6",
 ]
 
 [project.scripts]
@@ -22,6 +24,7 @@ cosmere-ingest-coppermind = "cosmere_rag.ingest.cli:main"
 cosmere-embed = "cosmere_rag.embed.cli:main"
 cosmere-index = "cosmere_rag.index.cli:main"
 cosmere-eval = "cosmere_rag.eval.cli:main"
+cosmere-ask = "cosmere_rag.agent.cli:main"
 
 [build-system]
 requires = ["hatchling"]

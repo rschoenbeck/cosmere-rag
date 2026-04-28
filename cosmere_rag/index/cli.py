@@ -29,7 +29,6 @@ from cosmere_rag.core.retriever import Retriever
 from cosmere_rag.embed.ids import compute_chunk_id
 from cosmere_rag.embed.store import SCHEMA as EMBEDDINGS_SCHEMA
 from cosmere_rag.retrieval.bigquery_store import BigQueryStore
-from cosmere_rag.retrieval.chroma_store import ChromaStore
 
 
 def _load_chunks(path: Path) -> list[dict[str, Any]]:
@@ -70,6 +69,8 @@ def _bq_safe(name: str) -> str:
 def _build_store(args: argparse.Namespace, collection: str) -> tuple[Retriever, str]:
     """Return (store, human-readable target description)."""
     if args.backend == "chroma":
+        from cosmere_rag.retrieval.chroma_store import ChromaStore
+
         store = ChromaStore(path=args.chroma_path, collection_name=collection)
         return store, f"{collection!r} at {args.chroma_path}"
 

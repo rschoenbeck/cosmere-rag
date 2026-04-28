@@ -304,7 +304,21 @@ name = "cosmere-rag"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "chromadb" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+]
+
+[package.optional-dependencies]
+build = [
+    { name = "google-cloud-bigquery" },
+    { name = "langchain-core" },
+    { name = "langchain-openai" },
+    { name = "langsmith" },
+    { name = "numpy" },
+    { name = "pyarrow" },
+    { name = "tiktoken" },
+]
+eval = [
     { name = "google-cloud-bigquery" },
     { name = "langchain" },
     { name = "langchain-core" },
@@ -312,37 +326,54 @@ dependencies = [
     { name = "langgraph" },
     { name = "langsmith" },
     { name = "numpy" },
-    { name = "pyarrow" },
-    { name = "pydantic" },
-    { name = "python-dotenv" },
     { name = "slack-bolt" },
-    { name = "tiktoken" },
+]
+serve = [
+    { name = "google-cloud-bigquery" },
+    { name = "langchain" },
+    { name = "langchain-core" },
+    { name = "langchain-openai" },
+    { name = "langgraph" },
+    { name = "langsmith" },
+    { name = "numpy" },
+    { name = "slack-bolt" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "chromadb" },
     { name = "pytest" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "chromadb", specifier = ">=0.5" },
-    { name = "google-cloud-bigquery", specifier = ">=3.25" },
-    { name = "langchain", specifier = ">=1" },
-    { name = "langchain-core", specifier = ">=0.3" },
-    { name = "langchain-openai", specifier = ">=0.2" },
-    { name = "langgraph", specifier = ">=0.6" },
-    { name = "langsmith", specifier = ">=0.7.33" },
-    { name = "numpy", specifier = ">=2" },
-    { name = "pyarrow", specifier = ">=17" },
+    { name = "cosmere-rag", extras = ["serve"], marker = "extra == 'eval'" },
+    { name = "google-cloud-bigquery", marker = "extra == 'build'", specifier = ">=3.25" },
+    { name = "google-cloud-bigquery", marker = "extra == 'serve'", specifier = ">=3.25" },
+    { name = "langchain", marker = "extra == 'serve'", specifier = ">=1" },
+    { name = "langchain-core", marker = "extra == 'build'", specifier = ">=0.3" },
+    { name = "langchain-core", marker = "extra == 'serve'", specifier = ">=0.3" },
+    { name = "langchain-openai", marker = "extra == 'build'", specifier = ">=0.2" },
+    { name = "langchain-openai", marker = "extra == 'serve'", specifier = ">=0.2" },
+    { name = "langgraph", marker = "extra == 'serve'", specifier = ">=0.6" },
+    { name = "langsmith", marker = "extra == 'build'", specifier = ">=0.7.33" },
+    { name = "langsmith", marker = "extra == 'eval'", specifier = ">=0.7.33" },
+    { name = "langsmith", marker = "extra == 'serve'", specifier = ">=0.7.33" },
+    { name = "numpy", marker = "extra == 'build'", specifier = ">=2" },
+    { name = "numpy", marker = "extra == 'serve'", specifier = ">=2" },
+    { name = "pyarrow", marker = "extra == 'build'", specifier = ">=17" },
     { name = "pydantic", specifier = ">=2.13.3" },
     { name = "python-dotenv", specifier = ">=1" },
-    { name = "slack-bolt", specifier = ">=1.20" },
-    { name = "tiktoken", specifier = ">=0.7" },
+    { name = "slack-bolt", marker = "extra == 'serve'", specifier = ">=1.20" },
+    { name = "tiktoken", marker = "extra == 'build'", specifier = ">=0.7" },
 ]
+provides-extras = ["serve", "build", "eval"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=8" }]
+dev = [
+    { name = "chromadb", specifier = ">=0.5" },
+    { name = "pytest", specifier = ">=8" },
+]
 
 [[package]]
 name = "cryptography"

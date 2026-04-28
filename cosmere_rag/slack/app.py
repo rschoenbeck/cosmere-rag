@@ -10,6 +10,8 @@ from __future__ import annotations
 import logging
 import os
 import sys
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from dotenv import load_dotenv
 
@@ -41,6 +43,24 @@ def _env_bool(name: str, default: bool = False) -> bool:
     if raw is None:
         return default
     return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+class _HealthHandler(BaseHTTPRequestHandler):
+    """Basic health check endpoint so this app doens't get shut down by Cloud Run after a startup probe"""
+    def do_GET(self) -> None:  # noqa: N802
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"ok")
+
+    def log_message(self, format: str, *args) -> None:  # noqa: A002, ANN001
+        pass
+
+
+def _start_health_server(port: int) -> None:
+    server = HTTPServer(("", port), _HealthHandler)
+    thread = threading.Thread(target=server.serve_forever, name="health", daemon=True)
+    thread.start()
 
 
 def main() -> int:
@@ -93,6 +113,10 @@ def main() -> int:
         table,
         embedding_model,
     )
+    port = int(os.environ.get("PORT", "0"))
+    if port:
+        _start_health_server(port)
+
     SocketModeHandler(app, app_token).start()
     return 0
 

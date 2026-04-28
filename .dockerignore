@@ -1,0 +1,14 @@
+.venv/
+.env*
+__pycache__/
+.pytest_cache/
+.git/
+data/
+eval/
+reports/
+plans/
+tests/
+scripts/
+*.md
+!README.md
+.DS_Store

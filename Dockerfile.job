@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1.7
+
+FROM python:3.13-slim AS builder
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+WORKDIR /app
+COPY pyproject.toml uv.lock README.md ./
+COPY cosmere_rag ./cosmere_rag
+
+RUN uv pip install --system --no-cache ".[build]"
+
+
+FROM python:3.13-slim AS runtime
+
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=builder /usr/local/bin/cosmere-ingest-coppermind /usr/local/bin/cosmere-ingest-coppermind
+COPY --from=builder /usr/local/bin/cosmere-embed /usr/local/bin/cosmere-embed
+COPY --from=builder /usr/local/bin/cosmere-index /usr/local/bin/cosmere-index
+
+WORKDIR /app
+USER nobody

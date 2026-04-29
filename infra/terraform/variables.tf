@@ -1,7 +1,6 @@
 variable "project_id" {
   description = "GCP project ID hosting cosmere-rag."
   type        = string
-  default     = "cosmere-rag-test"
 }
 
 variable "region" {

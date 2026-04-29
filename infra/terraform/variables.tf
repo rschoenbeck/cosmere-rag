@@ -1,6 +1,7 @@
 variable "project_id" {
   description = "GCP project ID hosting cosmere-rag."
   type        = string
+  default     = "cosmere-rag-test"
 }
 
 variable "region" {
@@ -24,7 +25,7 @@ variable "dataset_location" {
 variable "table_name" {
   description = "BigQuery table for chunks + embeddings (one table per corpus + embedding model)."
   type        = string
-  default     = "era1"
+  default     = "mistborn_era1__text_embedding_3_small__v1"
 }
 
 variable "image_repo" {

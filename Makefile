@@ -22,7 +22,7 @@ PIPELINE_SH := git clone --filter=blob:none $(COPPERMIND_REPO) /tmp/coppermind-m
         build-serve build-job \
         deploy-serve deploy-job \
         release-serve release-job \
-        run-pipeline logs logs-job restart
+        run-pipeline logs logs-job restart stop
 
 ## One-time: create GCS bucket for Terraform remote state (idempotent).
 bootstrap-tfstate:
@@ -85,6 +85,13 @@ logs:
 
 logs-job:
 	gcloud run jobs logs read cosmere-rag-pipeline --region=$(REGION) --limit=200
+
+## Scale the service to zero — stops billing without deleting it. Use tf-destroy to fully remove.
+stop:
+	gcloud run services update cosmere-slack \
+	  --region=$(REGION) \
+	  --min-instances=0 \
+	  --max-instances=0
 
 ## Force a new revision after a secret rotation — no rebuild needed.
 restart:

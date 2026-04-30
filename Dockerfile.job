@@ -13,6 +13,9 @@ RUN uv pip install --system --no-cache ".[build]"
 
 FROM python:3.13-slim AS runtime
 
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
 COPY --from=builder /usr/local/bin/cosmere-ingest-coppermind /usr/local/bin/cosmere-ingest-coppermind
 COPY --from=builder /usr/local/bin/cosmere-embed /usr/local/bin/cosmere-embed

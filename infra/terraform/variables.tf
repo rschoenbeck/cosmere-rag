@@ -24,7 +24,7 @@ variable "dataset_location" {
 variable "table_name" {
   description = "BigQuery table for chunks + embeddings (one table per corpus + embedding model)."
   type        = string
-  default     = "mistborn_era1__text_embedding_3_small__v1"
+  default     = "era1"
 }
 
 variable "image_repo" {

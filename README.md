@@ -1,6 +1,6 @@
 # cosmere-rag
 
-A learning project: retrieval-augmented question answering over Brandon Sanderson's Mistborn Era 1 novels.
+A retrieval-augmented question answering service over Brandon Sanderson's Mistborn Era 1 novels.
 
 Source material comes exclusively from public APIs — the [Coppermind wiki](https://coppermind.net), as [index by a scraping repo](https://github.com/Malthemester/CoppermindScraper).
 Text is embedded with OpenAI, indexed in Chroma (locally) or BigQuery (deployed), and answered by a LangGraph agent exposed through a CLI and a Slack bot.

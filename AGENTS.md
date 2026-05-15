@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Retrieval-augmented question answering over Brandon Sanderson's Cosmere. Source material is fetched from public APIs (Coppermind wiki, Arcanum/Palanaeum, Sanderson's blog) — never scraped, never books — embedded with OpenAI, indexed in Chroma (local) or BigQuery (deployed), and answered by a LangGraph agent surfaced via a CLI (`cosmere-ask`) and a Slack Bolt app (`cosmere-slack`). LangSmith handles tracing and the eval harness.
+Retrieval-augmented question answering over Brandon Sanderson's Mistborn Era 1 novels. Source material comes from a pinned mirror of the Coppermind wiki — never scraped, never books — embedded with OpenAI, indexed in Chroma (local) or BigQuery (deployed), and answered by a LangGraph agent surfaced via a CLI (`cosmere-ask`) and a Slack Bolt app (`cosmere-slack`). LangSmith handles tracing and the eval harness.
 
 Status: learning project, work in progress. Polite rate limits and legitimate APIs are non-negotiable — see `memory/project_source_access.md`.
 

@@ -1,9 +1,17 @@
 # cosmere-rag
 
-A retrieval-augmented question answering service over Brandon Sanderson's Mistborn Era 1 novels.
+A toy project: retrieval-augmented question answering over Brandon Sanderson's Mistborn Era 1 novels.
 
-Source material comes exclusively from public APIs — the [Coppermind wiki](https://coppermind.net), as [index by a scraping repo](https://github.com/Malthemester/CoppermindScraper).
+Source material comes from a [pinned mirror](https://github.com/Malthemester/CoppermindScraper) of the [Coppermind wiki](https://coppermind.net) — no scraping, no book text.
 Text is embedded with OpenAI, indexed in Chroma (locally) or BigQuery (deployed), and answered by a LangGraph agent exposed through a CLI and a Slack bot.
+
+## What this demonstrates
+
+- **Build-time / serve-time split** — `retrieval/` never imports from `embed/` or `ingest/`, so the deployed image pulls only what it needs. Enforced as an architectural invariant, not a convention.
+- **Idempotent embedding cache** — `cosmere-embed` re-embeds only on chunk-id miss, model change, or text-hash change. Parquet-backed, keyed by a deterministic `chunk_id`.
+- **Pluggable retrieval behind a Protocol** — the same `Retriever` interface backs `ChromaStore` (local dev) and `BigQueryStore` (prod). One `answer()` seam; the UIs don't know which backend is in use.
+- **LangSmith-traced eval harness** — IR metrics (recall, MRR) and LLM-as-judge tracks, with an `--offline` mode for hermetic runs.
+- **Traceable corpus snapshots** — every chunk is stamped with the mirror's git SHA, so a retrieved answer can be tied back to an exact source revision.
 
 ## Architecture
 
@@ -55,9 +63,46 @@ cosmere_rag/
 # Install everything (dev + all optional groups)
 uv sync --all-extras
 
-# Copy and fill in secrets
+# Copy and fill in secrets (OPENAI_API_KEY is the only one required for the CLI)
 cp .env.example .env
 ```
+
+## Quickstart
+
+From a clean clone to a working `cosmere-ask`:
+
+```bash
+bash scripts/fetch_corpus.sh                              # 1. fetch pinned wiki mirror
+cosmere-ingest-coppermind \
+  --corpus-dir data/coppermind-mirror/Cosmere \
+  --out data/processed/era1.jsonl                         # 2. parse + chunk Era 1
+cosmere-embed \
+  --chunks data/processed/era1.jsonl \
+  --out data/embeddings/era1.parquet                      # 3. embed (idempotent)
+cosmere-index --backend chroma \
+  --chunks data/processed/era1.jsonl \
+  --embeddings data/embeddings/era1.parquet \
+  --collection era1                                       # 4. upsert into local Chroma
+cosmere-ask --collection era1 \
+  "What people primarily practiced Trelagism before it was eradicated?"
+```
+
+### Example output
+
+```
+$ cosmere-ask --collection era1 \
+    "What people primarily practiced Trelagism before it was eradicated?"
+
+Trelagism was primarily practiced by the Nelazan, a people of northern Scadrial
+known for their advances in mathematics and astronomy. The religion was
+suppressed and effectively eradicated under the Final Empire.
+
+Sources:
+  - Trelagism — https://coppermind.net/wiki/Trelagism
+  - Nelazan — https://coppermind.net/wiki/Nelazan
+```
+
+Each section below covers a step in more depth.
 
 ## Data pipeline
 

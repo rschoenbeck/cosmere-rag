@@ -7,10 +7,10 @@ Text is embedded with OpenAI, indexed in Chroma (locally) or BigQuery (deployed)
 
 ## What this demonstrates
 
-- **Build-time / serve-time split** — `retrieval/` never imports from `embed/` or `ingest/`, so the deployed image pulls only what it needs. Enforced as an architectural invariant, not a convention.
+- **Build-time / serve-time split** — `retrieval/` never imports from `embed/` or `ingest/`, so the deployed image only pulls in what it needs at query time.
 - **Idempotent embedding cache** — `cosmere-embed` re-embeds only on chunk-id miss, model change, or text-hash change. Parquet-backed, keyed by a deterministic `chunk_id`.
-- **Pluggable retrieval behind a Protocol** — the same `Retriever` interface backs `ChromaStore` (local dev) and `BigQueryStore` (prod). One `answer()` seam; the UIs don't know which backend is in use.
-- **LangSmith-traced eval harness** — IR metrics (recall, MRR) and LLM-as-judge tracks, with an `--offline` mode for hermetic runs.
+- **A single `Retriever` abstraction** — both `ChromaStore` (local dev) and `BigQueryStore` (prod) implement it, so the CLI and the Slack bot call into one `answer()` function and don't have to care which backend is wired up underneath.
+- **LangSmith-traced eval harness** — IR metrics (recall, MRR) and LLM-as-judge tracks, with an `--offline` mode that skips LangSmith entirely.
 - **Traceable corpus snapshots** — every chunk is stamped with the mirror's git SHA, so a retrieved answer can be tied back to an exact source revision.
 
 ## Architecture
@@ -39,13 +39,13 @@ Text is embedded with OpenAI, indexed in Chroma (locally) or BigQuery (deployed)
                     └──────────────────────────────────────────────────────┘
 ```
 
-The hard boundary between build-time and serve-time keeps the deployed image lean: `retrieval/` never imports from `embed/` or `ingest/`.
+Keeping build-time and serve-time code in separate packages — `retrieval/` never imports from `embed/` or `ingest/` — is what keeps the deployed image lean.
 
 ## Package layout
 
 ```
 cosmere_rag/
-  core/       — domain types: Chunk, RetrievedChunk, Retriever protocol
+  core/       — shared types: Chunk, RetrievedChunk, and the Retriever abstraction
   ingest/     — Coppermind parsing + chunking (build-time only)
   embed/      — Embedder (LangChain wrapper, L2-normalized), parquet cache, cosmere-embed CLI
   index/      — joins JSONL + parquet, upserts to a backend (build-time only)

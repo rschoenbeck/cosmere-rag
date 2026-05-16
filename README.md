@@ -2,7 +2,7 @@
 
 Production-ready RAG architecture -- LangGraph agent, dual Chroma/BigQuery backends, Cloud Run deployment, Slack bot, LangSmith eval harness. 
 
-Corpus is a public fan-wiki mirror of Brandon Sanderson's Mistborn novels (chosen for clean public-domain access and rich entity structure).
+Corpus is a public fan-wiki mirror of Brandon Sanderson's Mistborn novels (chosen for clean public-domain access and rich entity structure -- and I'm a fan too, naturally).
 Source material comes from a [pinned mirror](https://github.com/Malthemester/CoppermindScraper) of the [Coppermind wiki](https://coppermind.net) — no scraping, no book text.
 Text is embedded with OpenAI, indexed in Chroma (locally) or BigQuery (deployed), and answered by a LangGraph agent exposed through a CLI and a Slack bot.
 
